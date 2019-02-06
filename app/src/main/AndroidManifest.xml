@@ -18,6 +18,8 @@
 
         <activity android:name=".TweetsActivity" />
 
+        <activity android:name=".MainActivityJava" />
+
     </application>
 
 </manifest>

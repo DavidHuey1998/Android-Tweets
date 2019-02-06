@@ -13,6 +13,16 @@ import android.widget.ProgressBar
 
 class MainActivity : AppCompatActivity() {
 
+    /*
+    * These variables are "lateinit" because can't actually assign a value to them until
+    * onCreate() is called (e.g. we are promising to the Kotlin compiler that these will be
+    * "initialized later").
+    *
+    * Alternative is to make them nullable and set them equal to null, but that's not as nice to
+    * work with.
+    *   private var username: EditText? = null
+    */
+
     private lateinit var username: EditText
 
     private lateinit var password: EditText
@@ -21,16 +31,26 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var progressBar: ProgressBar
 
+    /**
+     * We're creating an "anonymous class" here (e.g. we're creating a class which implements
+     * TextWatcher, but not creating an explicit class).
+     *
+     * object : TextWatcher == "creating a new object which implements TextWatcher"
+     */
     private val textWatcher: TextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {}
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            // We're calling .getText() here, but in Kotlin you can omit the "get" or "set"
+            // on a getter / setter and "pretend" you're using an actual variable.
+            //      username.getText() == username.text
             val inputtedUsername: String = username.text.toString().trim()
             val inputtedPassword: String = password.text.toString().trim()
             val enableButton: Boolean = inputtedUsername.isNotEmpty() && inputtedPassword.isNotEmpty()
 
+            // Like above, this is really doing login.setEnabled(enableButton) under the hood
             login.isEnabled = enableButton
         }
 
@@ -50,6 +70,10 @@ class MainActivity : AppCompatActivity() {
         username.addTextChangedListener(textWatcher)
         password.addTextChangedListener(textWatcher)
 
+        // This is similar to the TextWatcher -- setOnClickListener takes a View.OnClickListener
+        // as a parameter, which is an **interface with only one method**, so in this special case
+        // you can just use a lambda (e.g. just open brances) instead of doing
+        //      object : View.OnClickListener { ... }
         login.setOnClickListener {
             Log.d("MainActivity", "Login Clicked")
             progressBar.visibility = View.VISIBLE
