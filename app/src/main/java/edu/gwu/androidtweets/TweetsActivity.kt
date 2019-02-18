@@ -24,11 +24,7 @@ class TweetsActivity : AppCompatActivity() {
         // Create the adapter and assign it to the RecyclerView
         recyclerView.adapter = TweetsAdapter(tweets)
 
-
-
-
-
-        // From Lecture 3
+        // Get the intent which was used to launch this activity and retrieve data from it
         val intent: Intent = intent
         val location: String = intent.getStringExtra("location")
 
