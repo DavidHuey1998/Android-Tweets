@@ -76,11 +76,12 @@ class MainActivity : AppCompatActivity() {
         //      object : View.OnClickListener { ... }
         login.setOnClickListener {
             Log.d("MainActivity", "Login Clicked")
-            progressBar.visibility = View.VISIBLE
 
             // Using an Intent to start our TweetsActivity and send a small amount of data to it
-            val intent: Intent = Intent(this, TweetsActivity::class.java)
-            intent.putExtra("location", "Washington D.C.")
+//            val intent: Intent = Intent(this, TweetsActivity::class.java)
+//            intent.putExtra("location", "Washington D.C.")
+
+            val intent: Intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
         }
     }
