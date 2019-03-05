@@ -31,17 +31,31 @@ class TwitterManager {
         okHttpClient = builder.build()
     }
 
+    /**
+     * Calls the Twitter OAuth API. To use this function, pass in two lambdas:
+     *  - [successCallback] will be called if the token is retrieved and is passed the token.
+     *  - [errorCallback] will be called if the API call fails and is passed the [Exception].
+     */
     fun retrieveOAuthToken(
         successCallback: (String) -> Unit,
         errorCallback: (Exception) -> Unit
     ) {
+        // If the token is cached, we don't need to call the API
         if (oAuthToken != null) {
             successCallback(oAuthToken!!)
             return
         }
 
+        // You would normally use your own secret keys from Twitter, but we can use mine for lecture
+        // since it is difficult for everyone in class to get their own credentials.
         val encodedKey = "TEtwV0l1ZlJ4bWpOY1kwSUlCeVJVblR2NDo1UGY4SXVvdEdjSHJpelZncHRNSVlkOGI2SHlRTGNvbXBjeTNZd1Q4WkFMbU9zandBNA=="
 
+        // Builds the OAuth request, which is comprised of:
+        //   - URL: https://api.twitter.com/oauth2/token"
+        //   - One header (the encoded key above)
+        //   - It's a POST call
+        //   - The body type is a special type (x-www-form-urlencoded). Usually, you will just see
+        //     a JSON-based body.
         val request: Request = Request.Builder()
             .url("https://api.twitter.com/oauth2/token")
             .header("Authorization", "Basic $encodedKey")
@@ -53,17 +67,40 @@ class TwitterManager {
             )
             .build()
 
-        val response = okHttpClient.newCall(request).execute()
+        // Let OkHttp handle the actual networking. It will call one of the two callbacks...
+        okHttpClient.newCall(request).enqueue(object : Callback {
+            /**
+             * [onFailure] is called if OkHttp is has an issue making the request (for example,
+             * no network connectivity).
+             */
+            override fun onFailure(call: Call, e: IOException) {
+                // Invoke the callback passed to our [retrieveOAuthToken] function.
+                errorCallback(e)
+            }
 
-        val responseBody = response.body()?.string()
-        if (response.isSuccessful && responseBody != null) {
-            val jsonObject = JSONObject(responseBody)
-            val token = jsonObject.getString("access_token")
-            oAuthToken = token
-            successCallback(token)
-        } else {
-            errorCallback(Exception("OAuth call failed"))
-        }
+            /**
+             * [onResponse] is called if OkHttp is able to get any response (successful or not)
+             * back from the server
+             */
+            override fun onResponse(call: Call, response: Response) {
+                // The token would be part of the JSON response body
+                val responseBody = response.body()?.string()
+
+                // Check if the response was successful (200 code) and the body is non-null
+                if (response.isSuccessful && responseBody != null) {
+                    // Parse the token out of the JSON
+                    val jsonObject = JSONObject(responseBody)
+                    val token = jsonObject.getString("access_token")
+                    oAuthToken = token
+
+                    // Invoke the callback passed to our [retrieveOAuthToken] function.
+                    successCallback(token)
+                } else {
+                    // Invoke the callback passed to our [retrieveOAuthToken] function.
+                    errorCallback(Exception("OAuth call failed"))
+                }
+            }
+        })
     }
 
     fun retrieveTweets(
