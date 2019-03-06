@@ -1,6 +1,7 @@
 package edu.gwu.androidtweets
 
 import android.content.Intent
+import android.location.Address
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
@@ -18,15 +19,44 @@ class TweetsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tweets)
 
+
+
+        recyclerView = findViewById(R.id.recyclerView)
+
+        // Set the direction of our list to be vertical
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+
+
+        // Get the intent which was used to launch this activity and retrieve data from it
+        val intent: Intent = intent
+        val location: Address = intent.getParcelableExtra("location")
+
+        title = getString(R.string.tweets_title, location.getAddressLine(0))
+
         twitterManager.retrieveOAuthToken(
             successCallback = { token ->
-                // Runs if we successfully retrieved a token
-                runOnUiThread {
-                    // Runs if we have an error
-                    Toast.makeText(this@TweetsActivity, "Token: $token", Toast.LENGTH_LONG).show()
-                }
+
+                twitterManager.retrieveTweets(
+                    oAuthToken = token,
+                    address = location,
+                    successCallback = { tweets ->
+                        runOnUiThread {
+                            // Create the adapter and assign it to the RecyclerView
+                            recyclerView.adapter = TweetsAdapter(tweets)
+                        }
+                    },
+                    errorCallback = {
+                        runOnUiThread {
+                            // Runs if we have an error
+                            Toast.makeText(this@TweetsActivity, "Error retrieving Tweets", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                )
+
+
             },
-            errorCallback = {
+            errorCallback = { exception ->
                 runOnUiThread {
                     // Runs if we have an error
                     Toast.makeText(this@TweetsActivity, "Error performing OAuth", Toast.LENGTH_LONG)
@@ -34,22 +64,6 @@ class TweetsActivity : AppCompatActivity() {
                 }
             }
         )
-
-        recyclerView = findViewById(R.id.recyclerView)
-
-        // Set the direction of our list to be vertical
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
-        val tweets = generateFakeTweets()
-
-        // Create the adapter and assign it to the RecyclerView
-        recyclerView.adapter = TweetsAdapter(tweets)
-
-        // Get the intent which was used to launch this activity and retrieve data from it
-        val intent: Intent = intent
-        val location: String = intent.getStringExtra("location")
-
-        title = getString(R.string.tweets_title, location)
     }
 
     private fun generateFakeTweets(): List<Tweet> {
