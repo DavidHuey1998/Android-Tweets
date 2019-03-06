@@ -1,7 +1,9 @@
 package edu.gwu.androidtweets
 
+import android.location.Address
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
+import org.jetbrains.anko.doAsync
 import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -48,7 +50,8 @@ class TwitterManager {
 
         // You would normally use your own secret keys from Twitter, but we can use mine for lecture
         // since it is difficult for everyone in class to get their own credentials.
-        val encodedKey = "TEtwV0l1ZlJ4bWpOY1kwSUlCeVJVblR2NDo1UGY4SXVvdEdjSHJpelZncHRNSVlkOGI2SHlRTGNvbXBjeTNZd1Q4WkFMbU9zandBNA=="
+        val encodedKey =
+            "TEtwV0l1ZlJ4bWpOY1kwSUlCeVJVblR2NDo1UGY4SXVvdEdjSHJpelZncHRNSVlkOGI2SHlRTGNvbXBjeTNZd1Q4WkFMbU9zandBNA=="
 
         // Builds the OAuth request, which is comprised of:
         //   - URL: https://api.twitter.com/oauth2/token"
@@ -104,9 +107,60 @@ class TwitterManager {
     }
 
     fun retrieveTweets(
+        oAuthToken: String,
+        address: Address,
         successCallback: (List<Tweet>) -> Unit,
         errorCallback: (Exception) -> Unit
     ) {
-        
+        // Data setup
+        val lat = address.latitude
+        val lon = address.longitude
+        val topic = "Android"
+        val radius = "30mi"
+
+
+        // Building the request, passing the OAuth token as a header
+        val request = Request.Builder()
+            .url("https://api.twitter.com/1.1/search/tweets.json?q=$topic&geocode=$lat,$lon,$radius")
+            .header("Authorization", "Bearer $oAuthToken")
+            .build()
+
+        okHttpClient.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                // Same error handling to last time
+                errorCallback(e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                // Similar success / error handling to last time
+                val tweets = mutableListOf<Tweet>()
+                val responseString = response.body()?.string()
+
+                if (response.isSuccessful && responseString != null) {
+                    val statuses = JSONObject(responseString).getJSONArray("statuses")
+                    for (i in 0 until statuses.length()) {
+                        val curr = statuses.getJSONObject(i)
+                        val text = curr.getString("text")
+                        val user = curr.getJSONObject("user")
+                        val name = user.getString("name")
+                        val handle = user.getString("screen_name")
+                        val profilePictureUrl = user.getString("profile_image_url")
+                        tweets.add(
+                            Tweet(
+                                iconUrl = profilePictureUrl,
+                                username = name,
+                                handle = handle,
+                                content = text
+                            )
+                        )
+                    }
+                    successCallback(tweets)
+                //...
+                } else {
+                    // Invoke the callback passed to our [retrieveTweets] function.
+                    errorCallback(Exception("Search Tweets call failed"))
+                }
+            }
+        })
     }
 }
