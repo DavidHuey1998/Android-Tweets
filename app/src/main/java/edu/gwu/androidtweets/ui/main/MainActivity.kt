@@ -1,4 +1,4 @@
-package edu.gwu.androidtweets
+package edu.gwu.androidtweets.ui.main
 
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
@@ -6,10 +6,11 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import edu.gwu.androidtweets.R
+import edu.gwu.androidtweets.ui.map.MapsActivity
 
 class MainActivity : AppCompatActivity() {
 
