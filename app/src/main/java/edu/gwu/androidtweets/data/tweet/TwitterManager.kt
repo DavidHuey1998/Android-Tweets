@@ -1,9 +1,8 @@
-package edu.gwu.androidtweets
+package edu.gwu.androidtweets.data.tweet
 
 import android.location.Address
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
-import org.jetbrains.anko.doAsync
 import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit

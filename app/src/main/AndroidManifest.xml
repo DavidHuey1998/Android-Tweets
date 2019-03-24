@@ -34,17 +34,17 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name=".ui.map.MapsActivity"
             android:label="@string/title_activity_maps"></activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".ui.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TweetsActivity" />
-        <activity android:name=".MainActivityJava" />
+        <activity android:name=".ui.tweet.TweetsActivity" />
+        <activity android:name=".ui.main.MainActivityJava" />
     </application>
 
 </manifest>

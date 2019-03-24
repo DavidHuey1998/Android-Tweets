@@ -1,0 +1,214 @@
+package edu.gwu.androidtweets.ui.tweet
+
+import android.content.Intent
+import android.location.Address
+import android.location.Geocoder
+import android.os.Bundle
+import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.view.View
+import android.widget.Toast
+import edu.gwu.androidtweets.R
+import edu.gwu.androidtweets.data.tweet.Tweet
+import edu.gwu.androidtweets.data.tweet.TwitterManager
+import org.jetbrains.anko.doAsync
+
+class TweetsActivity : AppCompatActivity() {
+
+    private val twitterManager: TwitterManager =
+        TwitterManager()
+
+    private val tweetsList: MutableList<Tweet> = mutableListOf()
+
+    private lateinit var recyclerView: RecyclerView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_tweets)
+
+        // Get the intent which was used to launch this activity and retrieve data from it
+        val intent: Intent = intent
+        val location: Address = intent.getParcelableExtra("location")
+
+        title = getString(R.string.tweets_title, location.getAddressLine(0))
+
+        recyclerView = findViewById(R.id.recyclerView)
+
+        // Set the direction of our list to be vertical
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        if (savedInstanceState != null) {
+            // The screen has rotated, so we should retrieve the previous Tweets
+            val previousTweets: List<Tweet>
+                = savedInstanceState.getSerializable("TWEETS") as List<Tweet>
+            tweetsList.addAll(previousTweets)
+
+            recyclerView.visibility = View.INVISIBLE
+            recyclerView.adapter = TweetsAdapter(tweetsList)
+        } else {
+            // Otherwise, first time activity launch, retrieve Tweets from Twitter
+            twitterManager.retrieveOAuthToken(
+                successCallback = { token ->
+
+                    twitterManager.retrieveTweets(
+                        oAuthToken = token,
+                        address = location,
+                        successCallback = { tweets ->
+                            runOnUiThread {
+                                tweetsList.clear()
+                                tweetsList.addAll(tweets)
+
+                                // Create the adapter and assign it to the RecyclerView
+                                recyclerView.adapter =
+                                    TweetsAdapter(tweets)
+                            }
+                        },
+                        errorCallback = {
+                            runOnUiThread {
+                                // Runs if we have an error
+                                Toast.makeText(this@TweetsActivity, "Error retrieving Tweets", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    )
+
+
+                },
+                errorCallback = { exception ->
+                    runOnUiThread {
+                        // Runs if we have an error
+                        Toast.makeText(this@TweetsActivity, "Error performing OAuth", Toast.LENGTH_LONG)
+                            .show()
+                    }
+                }
+            )
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable("TWEETS", ArrayList(tweetsList))
+    }
+
+    private fun generateFakeTweets(val geocoder: Geocoder): List<Tweet> {
+        doAsync {
+            // geocoding query accepts user destination input, max results, and lat lon coordinates for the DC area
+            var results = try {
+                geocoder.getFromLocationName(
+                    geoDestQuery, maxResults, 38.622755, -77.337808,
+                    39.266427, -76.762234)
+
+                runOnUiThread {
+
+                    if (results.isEmpty()) {
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle(R.string.routeDialog)
+                            .setPositiveButton(R.string.affirm, null)
+                            .setMessage(R.string.noResults).show()
+                    }
+                    else {
+                        val arrayAdapter = ArrayAdapter<String>(this@MainActivity, android.R.layout.select_dialog_singlechoice)
+                        var x = 0
+                        for (result in results) {
+                            arrayAdapter.add(results[x].getAddressLine(0))
+                            x++
+                        }
+
+                        // Destination address matches radio dialog message
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle(R.string.routeDialog)
+                            .setNegativeButton(R.string.cancel, null)
+                            .setPositiveButton(R.string.affirm) { dialog, which ->
+                                val routeIntent = Intent(this@MainActivity, RouteActivity::class.java)
+                                routeIntent.putExtra("destination", selectDest)
+                                routeIntent.putExtra("latitude", destLatitude)
+                                routeIntent.putExtra("longitude", destLongitude)
+                                startActivity(routeIntent)
+                            }
+                            .setSingleChoiceItems(arrayAdapter, -1)
+                            { dialog, index ->
+                                selectDest = results[index].getAddressLine(0)
+                                destLatitude = results[index].latitude
+                                destLongitude = results[index].longitude
+                                Log.d(
+                                    "main",
+                                    selectDest + " latitude: " + destLatitude + " longitude: " + destLongitude)
+                            }
+                            .show()
+                    }
+                }}
+            catch(e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this@MainActivity, R.string.geofailure, Toast.LENGTH_LONG).show()
+                }
+                listOf<Address>()
+
+            }
+
+
+        return listOf(
+            Tweet(
+                username = "Nick Capurso",
+                handle = "@nickcapurso",
+                content = "We're learning lists!",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "Android Central",
+                handle = "@androidcentral",
+                content = "NVIDIA Shield TV vs. Shield TV Pro: Which should I buy?",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "DC Android",
+                handle = "@DCAndroid",
+                content = "FYI - another great integration for the @Firebase platform",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "KotlinConf",
+                handle = "@kotlinconf",
+                content = "Can't make it to KotlinConf this year? We have a surprise for you. We'll be live streaming the keynotes, closing panel and an entire track over the 2 main conference days. Sign-up to get notified once we go live!",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "Android Summit",
+                handle = "@androidsummit",
+                content = "What a #Keynote! @SlatteryClaire is the Director of Performance at Speechless, and that's exactly how she left us after her amazing (and interactive!) #keynote at #androidsummit. #DCTech #AndroidDev #Android",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "Fragmented Podcast",
+                handle = "@FragmentedCast",
+                content = ".... annnnnnnnnd we're back!\n\nThis week @donnfelker talks about how it's Ok to not know everything and how to set yourself up mentally for JIT (Just In Time [learning]). Listen in here: \nhttp://fragmentedpodcast.com/episodes/135/ ",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "Jake Wharton",
+                handle = "@JakeWharton",
+                content = "Free idea: location-aware physical password list inside a password manager. Mostly for garage door codes and the like. I want to open my password app, switch to the non-URL password section, and see a list of things sorted by physical distance to me.",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "Droidcon Boston",
+                handle = "@droidconbos",
+                content = "#DroidconBos will be back in Boston next year on April 8-9!",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = "AndroidWeekly",
+                handle = "@androidweekly",
+                content = "Latest Android Weekly Issue 327 is out!\nhttp://androidweekly.net/ #latest-issue  #AndroidDev",
+                iconUrl = "https://...."
+            ),
+            Tweet(
+                username = ".droidconSF",
+                handle = "@droidconSF",
+                content = "Drum roll please.. Announcing droidcon SF 2018! November 19-20 @ Mission Bay Conference Center. Content and programming by @tsmith & @joenrv.",
+                iconUrl = "https://...."
+            )
+        )
+    }
+
+}

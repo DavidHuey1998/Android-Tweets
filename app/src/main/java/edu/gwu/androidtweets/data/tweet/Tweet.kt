@@ -1,4 +1,4 @@
-package edu.gwu.androidtweets
+package edu.gwu.androidtweets.data.tweet
 
 import java.io.Serializable
 
