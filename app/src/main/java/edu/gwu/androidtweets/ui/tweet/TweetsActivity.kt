@@ -91,62 +91,7 @@ class TweetsActivity : AppCompatActivity() {
         outState.putSerializable("TWEETS", ArrayList(tweetsList))
     }
 
-    private fun generateFakeTweets(val geocoder: Geocoder): List<Tweet> {
-        doAsync {
-            // geocoding query accepts user destination input, max results, and lat lon coordinates for the DC area
-            var results = try {
-                geocoder.getFromLocationName(
-                    geoDestQuery, maxResults, 38.622755, -77.337808,
-                    39.266427, -76.762234)
-
-                runOnUiThread {
-
-                    if (results.isEmpty()) {
-                        AlertDialog.Builder(this@MainActivity)
-                            .setTitle(R.string.routeDialog)
-                            .setPositiveButton(R.string.affirm, null)
-                            .setMessage(R.string.noResults).show()
-                    }
-                    else {
-                        val arrayAdapter = ArrayAdapter<String>(this@MainActivity, android.R.layout.select_dialog_singlechoice)
-                        var x = 0
-                        for (result in results) {
-                            arrayAdapter.add(results[x].getAddressLine(0))
-                            x++
-                        }
-
-                        // Destination address matches radio dialog message
-                        AlertDialog.Builder(this@MainActivity)
-                            .setTitle(R.string.routeDialog)
-                            .setNegativeButton(R.string.cancel, null)
-                            .setPositiveButton(R.string.affirm) { dialog, which ->
-                                val routeIntent = Intent(this@MainActivity, RouteActivity::class.java)
-                                routeIntent.putExtra("destination", selectDest)
-                                routeIntent.putExtra("latitude", destLatitude)
-                                routeIntent.putExtra("longitude", destLongitude)
-                                startActivity(routeIntent)
-                            }
-                            .setSingleChoiceItems(arrayAdapter, -1)
-                            { dialog, index ->
-                                selectDest = results[index].getAddressLine(0)
-                                destLatitude = results[index].latitude
-                                destLongitude = results[index].longitude
-                                Log.d(
-                                    "main",
-                                    selectDest + " latitude: " + destLatitude + " longitude: " + destLongitude)
-                            }
-                            .show()
-                    }
-                }}
-            catch(e: Exception) {
-                runOnUiThread {
-                    Toast.makeText(this@MainActivity, R.string.geofailure, Toast.LENGTH_LONG).show()
-                }
-                listOf<Address>()
-
-            }
-
-
+    private fun generateFakeTweets(): List<Tweet> {
         return listOf(
             Tweet(
                 username = "Nick Capurso",
