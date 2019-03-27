@@ -9,6 +9,11 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.FirebaseUser
 import edu.gwu.androidtweets.R
 import edu.gwu.androidtweets.ui.map.MapsActivity
 
@@ -30,7 +35,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var login: Button
 
+    private lateinit var signUp: Button
+
     private lateinit var progressBar: ProgressBar
+
+    private lateinit var firebaseAuth: FirebaseAuth
 
     /**
      * We're creating an "anonymous class" here (e.g. we're creating a class which implements
@@ -60,8 +69,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        firebaseAuth = FirebaseAuth.getInstance()
+
+        signUp = findViewById(R.id.signUp)
 
         Log.d("MainActivity", "onCreate called")
+
 
         username = findViewById(R.id.username)
         password = findViewById(R.id.password)
@@ -71,19 +84,68 @@ class MainActivity : AppCompatActivity() {
         username.addTextChangedListener(textWatcher)
         password.addTextChangedListener(textWatcher)
 
+        signUp.setOnClickListener {
+            val inputtedUsername: String = username.text.toString().trim()
+            val inputtedPassword: String = password.text.toString().trim()
+
+            firebaseAuth.createUserWithEmailAndPassword(
+                inputtedUsername,
+                inputtedPassword
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // If Sign Up is successful, Firebase automatically logs
+                    // in as that user too (e.g. currentUser is set)
+                    val currentUser: FirebaseUser? = firebaseAuth.currentUser
+                    Toast.makeText(
+                        this,
+                        "Registered as: ${currentUser!!.email}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    val exception = task.exception
+                    Toast.makeText(
+                        this,
+                        "Failed to register: $exception",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
         // This is similar to the TextWatcher -- setOnClickListener takes a View.OnClickListener
         // as a parameter, which is an **interface with only one method**, so in this special case
         // you can just use a lambda (e.g. just open brances) instead of doing
         //      object : View.OnClickListener { ... }
         login.setOnClickListener {
-            Log.d("MainActivity", "Login Clicked")
+            val inputtedUsername: String = username.text.toString().trim()
+            val inputtedPassword: String = password.text.toString().trim()
 
-            // Using an Intent to start our TweetsActivity and send a small amount of data to it
-//            val intent: Intent = Intent(this, TweetsActivity::class.java)
-//            intent.putExtra("location", "Washington D.C.")
+            firebaseAuth.signInWithEmailAndPassword(
+                inputtedUsername,
+                inputtedPassword
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val currentUser: FirebaseUser? = firebaseAuth.currentUser
+                    Toast.makeText(
+                        this,
+                        "Logged in as: ${currentUser!!.email}",
+                        Toast.LENGTH_LONG
+                    ).show()
 
-            val intent: Intent = Intent(this, MapsActivity::class.java)
-            startActivity(intent)
+                    // User logged in, advance to the next screen
+                    val intent: Intent = Intent(this, MapsActivity::class.java)
+                    startActivity(intent)
+                } else {
+                    val exception = task.exception
+                    Toast.makeText(
+                        this,
+                        "Failed to login: $exception",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+
+
         }
     }
 
