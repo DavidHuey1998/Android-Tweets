@@ -10,6 +10,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import com.crashlytics.android.Crashlytics
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
@@ -41,6 +43,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var firebaseAuth: FirebaseAuth
 
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
+
     /**
      * We're creating an "anonymous class" here (e.g. we're creating a class which implements
      * TextWatcher, but not creating an explicit class).
@@ -70,6 +74,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         firebaseAuth = FirebaseAuth.getInstance()
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
 
         signUp = findViewById(R.id.signUp)
 
@@ -85,6 +91,9 @@ class MainActivity : AppCompatActivity() {
         password.addTextChangedListener(textWatcher)
 
         signUp.setOnClickListener {
+
+            Crashlytics.getInstance().crash()
+
             val inputtedUsername: String = username.text.toString().trim()
             val inputtedPassword: String = password.text.toString().trim()
 
@@ -125,6 +134,8 @@ class MainActivity : AppCompatActivity() {
                 inputtedPassword
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    firebaseAnalytics.logEvent("login_success", null)
+
                     val currentUser: FirebaseUser? = firebaseAuth.currentUser
                     Toast.makeText(
                         this,
@@ -142,6 +153,19 @@ class MainActivity : AppCompatActivity() {
                         "Failed to login: $exception",
                         Toast.LENGTH_LONG
                     ).show()
+
+                    val reason: String = if (exception is FirebaseAuthInvalidCredentialsException) {
+                        "invalid_credentials"
+                    } else {
+                        "generic_failure"
+                    }
+
+                    val bundle = Bundle()
+                    bundle.putString("error_reason", reason)
+
+                    // Tracking that the login failed and also sending
+                    // along the reason why
+                    firebaseAnalytics.logEvent("login_failed", bundle)
                 }
             }
 

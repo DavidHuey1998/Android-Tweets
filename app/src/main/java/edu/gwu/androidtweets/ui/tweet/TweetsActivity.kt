@@ -4,12 +4,19 @@ import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import edu.gwu.androidtweets.R
 import edu.gwu.androidtweets.data.tweet.Tweet
 import edu.gwu.androidtweets.data.tweet.TwitterManager
@@ -24,20 +31,57 @@ class TweetsActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
 
+    private lateinit var tweetContent: EditText
+
+    private lateinit var addTweet: FloatingActionButton
+
+    private lateinit var firebaseDatabase: FirebaseDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tweets)
+
+        tweetContent = findViewById(R.id.tweet_content)
+        addTweet = findViewById(R.id.add_tweet)
+
+        firebaseDatabase = FirebaseDatabase.getInstance()
+
 
         // Get the intent which was used to launch this activity and retrieve data from it
         val intent: Intent = intent
         val location: Address = intent.getParcelableExtra("location")
 
-        title = getString(R.string.tweets_title, location.getAddressLine(0))
+        // Uses "unknown" if the adminArea is null
+        val state: String = location.adminArea ?: "unknown"
+
+        title = getString(R.string.tweets_title, state)
 
         recyclerView = findViewById(R.id.recyclerView)
 
         // Set the direction of our list to be vertical
         recyclerView.layoutManager = LinearLayoutManager(this)
+
+
+        // The location in our DB that we will be reading / writing to
+        val reference = firebaseDatabase.getReference("tweets/$state")
+
+        addTweet.setOnClickListener {
+            val content: String = tweetContent.text.toString().trim()
+
+            // !! == will crash if null, but we know the user has registered as is logged in
+            val email: String = FirebaseAuth.getInstance().currentUser!!.email!!
+
+            if (content.isNotEmpty()) {
+                val tweet = Tweet(
+                    username = email,
+                    handle = email,
+                    content = content,
+                    iconUrl = ""
+                )
+
+                reference.push().setValue(tweet)
+            }
+        }
 
         if (savedInstanceState != null) {
             // The screen has rotated, so we should retrieve the previous Tweets
@@ -48,41 +92,70 @@ class TweetsActivity : AppCompatActivity() {
             recyclerView.visibility = View.INVISIBLE
             recyclerView.adapter = TweetsAdapter(tweetsList)
         } else {
-            // Otherwise, first time activity launch, retrieve Tweets from Twitter
-            twitterManager.retrieveOAuthToken(
-                successCallback = { token ->
-
-                    twitterManager.retrieveTweets(
-                        oAuthToken = token,
-                        address = location,
-                        successCallback = { tweets ->
-                            runOnUiThread {
-                                tweetsList.clear()
-                                tweetsList.addAll(tweets)
-
-                                // Create the adapter and assign it to the RecyclerView
-                                recyclerView.adapter =
-                                    TweetsAdapter(tweets)
-                            }
-                        },
-                        errorCallback = {
-                            runOnUiThread {
-                                // Runs if we have an error
-                                Toast.makeText(this@TweetsActivity, "Error retrieving Tweets", Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    )
-
-
-                },
-                errorCallback = { exception ->
-                    runOnUiThread {
-                        // Runs if we have an error
-                        Toast.makeText(this@TweetsActivity, "Error performing OAuth", Toast.LENGTH_LONG)
-                            .show()
-                    }
+            // Get the "Tweets" from Firebase
+            reference.addValueEventListener(object : ValueEventListener {
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Toast.makeText(
+                        this@TweetsActivity,
+                        "Failed to retrieve Firebase! Error: ${databaseError.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
-            )
+
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    tweetsList.clear()
+
+                    dataSnapshot.children.forEach { data ->
+                        // Does all the JSON parsing to create a Tweet
+                        val tweet: Tweet? = data.getValue(Tweet::class.java)
+
+                        if (tweet != null) {
+                            tweetsList.add(tweet)
+                        }
+                    }
+
+                    recyclerView.adapter = TweetsAdapter(tweetsList)
+                }
+            })
+
+
+
+
+//            // Otherwise, first time activity launch, retrieve Tweets from Twitter
+//            twitterManager.retrieveOAuthToken(
+//                successCallback = { token ->
+//
+//                    twitterManager.retrieveTweets(
+//                        oAuthToken = token,
+//                        address = location,
+//                        successCallback = { tweets ->
+//                            runOnUiThread {
+//                                tweetsList.clear()
+//                                tweetsList.addAll(tweets)
+//
+//                                // Create the adapter and assign it to the RecyclerView
+//                                recyclerView.adapter =
+//                                    TweetsAdapter(tweets)
+//                            }
+//                        },
+//                        errorCallback = {
+//                            runOnUiThread {
+//                                // Runs if we have an error
+//                                Toast.makeText(this@TweetsActivity, "Error retrieving Tweets", Toast.LENGTH_LONG).show()
+//                            }
+//                        }
+//                    )
+//
+//
+//                },
+//                errorCallback = { exception ->
+//                    runOnUiThread {
+//                        // Runs if we have an error
+//                        Toast.makeText(this@TweetsActivity, "Error performing OAuth", Toast.LENGTH_LONG)
+//                            .show()
+//                    }
+//                }
+//            )
         }
     }
 
