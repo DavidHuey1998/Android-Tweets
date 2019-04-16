@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import com.squareup.picasso.Picasso
 import edu.gwu.androidtweets.R
 import edu.gwu.androidtweets.data.tweet.Tweet
 
@@ -45,7 +46,12 @@ class TweetsAdapter constructor(private val tweets: List<Tweet>) : RecyclerView.
         holder.handleTextView.text = currentTweet.handle
         holder.contentTextView.text = currentTweet.content
 
-        // TODO Download the image by its URL and load it into the ImageView
+        // So we can see loaded from network vs. cache
+//        Picasso.get().setIndicatorsEnabled(true)
+
+        Picasso.get()
+            .load(currentTweet.iconUrl)
+            .into(holder.iconImageView)
     }
 
     /**

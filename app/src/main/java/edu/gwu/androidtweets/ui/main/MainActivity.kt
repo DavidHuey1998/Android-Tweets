@@ -1,8 +1,17 @@
 package edu.gwu.androidtweets.ui.main
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.TaskStackBuilder
+import android.content.Context
 import android.content.Intent
+import android.location.Address
+import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationManagerCompat
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -18,6 +27,8 @@ import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import edu.gwu.androidtweets.R
 import edu.gwu.androidtweets.ui.map.MapsActivity
+import edu.gwu.androidtweets.ui.tweet.TweetsActivity
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -73,6 +84,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        createNotificationChannel()
+
         firebaseAuth = FirebaseAuth.getInstance()
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
@@ -91,9 +105,6 @@ class MainActivity : AppCompatActivity() {
         password.addTextChangedListener(textWatcher)
 
         signUp.setOnClickListener {
-
-            Crashlytics.getInstance().crash()
-
             val inputtedUsername: String = username.text.toString().trim()
             val inputtedPassword: String = password.text.toString().trim()
 
@@ -110,6 +121,8 @@ class MainActivity : AppCompatActivity() {
                         "Registered as: ${currentUser!!.email}",
                         Toast.LENGTH_LONG
                     ).show()
+
+                    showNewUserNotification()
                 } else {
                     val exception = task.exception
                     Toast.makeText(
@@ -135,6 +148,8 @@ class MainActivity : AppCompatActivity() {
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     firebaseAnalytics.logEvent("login_success", null)
+
+
 
                     val currentUser: FirebaseUser? = firebaseAuth.currentUser
                     Toast.makeText(
@@ -168,10 +183,56 @@ class MainActivity : AppCompatActivity() {
                     firebaseAnalytics.logEvent("login_failed", bundle)
                 }
             }
-
-
         }
     }
+
+    private fun showNewUserNotification() {
+        val address = Address(Locale.ENGLISH)
+        address.adminArea = "Virginia"
+        address.latitude = 38.8950151
+        address.longitude = -77.0732913
+
+        val tweetsIntent = Intent(this, TweetsActivity::class.java)
+        tweetsIntent.putExtra("location", address)
+
+        val tweetsPendingIntentBuilder = TaskStackBuilder.create(this)
+        tweetsPendingIntentBuilder.addNextIntentWithParentStack(tweetsIntent)
+
+        val tweetsPendingIntent = tweetsPendingIntentBuilder.getPendingIntent(
+            0,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val mBuilder = NotificationCompat.Builder(this, "default")
+            .setSmallIcon(R.drawable.ic_check_white_24dp)
+            .setContentTitle("Android Tweets")
+            .setContentText("Welcome to Android Tweets!")
+            .setStyle(NotificationCompat.BigTextStyle()
+                .bigText("To get started, log into the app and choose a location on the Map. You can either long press on the Map or press the button to use your current location. The app will then retrieve Tweets containing the word 'Android' near the location!"))
+            .setContentIntent(tweetsPendingIntent)
+            .addAction(0, "Go To Virginia", tweetsPendingIntent)
+
+
+        NotificationManagerCompat.from(this).notify(0, mBuilder.build())
+
+    }
+
+    private fun createNotificationChannel() {
+        // Only needed for Android Oreo and higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Default Notifications"
+            val descriptionText = "The app's default notification set"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("default", name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
 
     override fun onStart() {
         super.onStart()
