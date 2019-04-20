@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseUser
 import edu.gwu.androidtweets.R
 import edu.gwu.androidtweets.ui.map.MapsActivity
 import edu.gwu.androidtweets.ui.tweet.TweetsActivity
+import org.json.JSONObject
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -87,6 +88,7 @@ class MainActivity : AppCompatActivity() {
 
         createNotificationChannel()
 
+
         firebaseAuth = FirebaseAuth.getInstance()
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
@@ -105,6 +107,681 @@ class MainActivity : AppCompatActivity() {
         password.addTextChangedListener(textWatcher)
 
         signUp.setOnClickListener {
+            val response = """
+                        {
+    "meta": {
+      "data_type": "array",
+      "item_type": "Doctor",
+      "total": 41331,
+      "count": 2,
+      "skip": 0,
+      "limit": 2
+    },
+    "data": [
+      {
+        "practices": [
+          {
+            "location_slug": "ca-santa-clara",
+            "within_search_area": true,
+            "distance": 41.69074568320229,
+            "lat": 37.335451,
+            "lon": -121.998482,
+            "uid": "a3b62933b3e831a4a941b074da7135d1",
+            "name": "Kaiser Permanente Santa Clara Homestead",
+            "website": "http://mydoctor.kaiserpermanente.org/ncal/provider/farhadparivar",
+            "accepts_new_patients": true,
+            "insurance_uids": [
+              "bluecrosscalifornia-bluecrosscapowerselecthmo",
+              "multiplan-multiplanppo",
+              "multiplan-phcsppo",
+              "multiplan-phcsppokaiser",
+              "blueshieldofcalifornia-blueshieldcabasicepobronzelevelhix",
+              "blueshieldofcalifornia-blueshieldcabasicppobronzelevelhix",
+              "anthem-blueviewvision",
+              "healthnet-healthnetindividualfamilyppohix",
+              "medicare-medicare",
+              "medicaid-medicaid",
+              "aetna-aetnamdbronzesilverandgoldhmo",
+              "healthnet-bluegoldhmo",
+              "healthnet-hmoexcelcaresilvernetwork",
+              "healthnet-hmoexcelcaresilvernetworkmedicarecob",
+              "gwhcigna-greatwestppo",
+              "kaiserpermanente-kaiserpermanente"
+            ],
+            "visit_address": {
+              "city": "Santa Clara",
+              "lat": 37.335451,
+              "lon": -121.998482,
+              "state": "CA",
+              "state_long": "California",
+              "street": "700 Lawrence Expy",
+              "zip": "95051"
+            },
+            "office_hours": [],
+            "phones": [
+              {
+                "number": "1408851100",
+                "type": "landline"
+              }
+            ],
+            "languages": [
+              {
+                "name": "English",
+                "code": "en"
+              }
+            ],
+            "media": [
+              {
+                "uid": "56ea4ed308a94f3f4100008c",
+                "status": "active",
+                "url": "https://asset1.betterdoctor.com/images/56ea4ed308a94f3f4100008c-4_small.jpg",
+                "tags": [
+                  "hero"
+                ],
+                "versions": {
+                  "small": "https://asset1.betterdoctor.com/images/56ea4ed308a94f3f4100008c-4_small.jpg",
+                  "medium": "https://asset2.betterdoctor.com/images/56ea4ed308a94f3f4100008c-4_medium.jpg",
+                  "large": "https://asset1.betterdoctor.com/images/56ea4ed308a94f3f4100008c-4_large.jpg",
+                  "hero": "https://asset1.betterdoctor.com/images/56ea4ed308a94f3f4100008c-4_hero.jpg"
+                }
+              }
+            ]
+          }
+        ],
+        "educations": [],
+        "profile": {
+          "first_name": "Jason",
+          "middle_name": "R.",
+          "last_name": "Snitzer",
+          "slug": "jason-snitzer",
+          "title": "MD",
+          "image_url": "https://asset2.betterdoctor.com/assets/general_doctor_male.png",
+          "gender": "male",
+          "languages": [
+            {
+              "name": "English",
+              "code": "en"
+            }
+          ],
+          "bio": "Dr. Jason Snitzer, MD, specialist in pediatrics, currently sees patients in Santa clara, California.\n\nDr. Snitzer is licensed to treat patients in California.\n\nDr. Snitzer has passed an automated background check which looked at elements including medical license status and malpractice screening (no history found)."
+        },
+        "ratings": [],
+        "insurances": [
+          {
+            "insurance_plan": {
+              "uid": "bluecrosscalifornia-bluecrosscapowerselecthmo",
+              "name": "Blue Cross CA PowerSelect HMO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "bcbs",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "multiplan-multiplanppo",
+              "name": "Multiplan PPO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "multiplan",
+              "name": "Multiplan"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "multiplan-phcsppo",
+              "name": "PHCS PPO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "multiplan",
+              "name": "Multiplan"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "multiplan-phcsppokaiser",
+              "name": "PHCS PPO - Kaiser",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "multiplan",
+              "name": "Multiplan"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "blueshieldofcalifornia-blueshieldcabasicepobronzelevelhix",
+              "name": "Basic EPO - Bronze level HIX",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "blueshieldofcalifornia",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "blueshieldofcalifornia-blueshieldcabasicppobronzelevelhix",
+              "name": "Basic PPO - Bronze level HIX",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "blueshieldofcalifornia",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "anthem-blueviewvision",
+              "name": "Blue View Vision",
+              "category": [
+                "vision"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "anthembluecross",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-healthnetindividualfamilyppohix",
+              "name": "Health Net Individual  Family - PPO  HIX",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "medicare-medicare",
+              "name": "Medicare",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "medicare",
+              "name": "Medicare"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "medicaid-medicaid",
+              "name": "Medicaid",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "medicaid",
+              "name": "Medicaid"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "aetna-aetnamdbronzesilverandgoldhmo",
+              "name": "MD Bronze Silver  Gold - HMO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "aetna",
+              "name": "Aetna"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-bluegoldhmo",
+              "name": "Blue  Gold - HMO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-hmoexcelcaresilvernetwork",
+              "name": "HMO - ExcelCare  Silver Network",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-hmoexcelcaresilvernetworkmedicarecob",
+              "name": "HMO - ExcelCare  Silver Network Medicare COB",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "gwhcigna-greatwestppo",
+              "name": "Great West PPO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "cigna",
+              "name": "Cigna"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "kaiserpermanente-kaiserpermanente",
+              "name": "Kaiser Permanente",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "kaiserpermanente",
+              "name": "Kaiser Permanente"
+            }
+          }
+        ],
+        "specialties": [
+          {
+            "uid": "pediatrician",
+            "name": "Pediatrics",
+            "description": "Specializes in the health of children from birth to young adulthood.",
+            "category": "medical",
+            "actor": "Pediatrician",
+            "actors": "Pediatricians"
+          }
+        ],
+        "licenses": [
+          {
+            "state": "CA"
+          },
+          {
+            "number": "G76269",
+            "state": "CA"
+          }
+        ],
+        "uid": "001f60172493d3546f7869f4b8bad742",
+        "npi": "1871670711"
+      },
+      {
+        "practices": [
+          {
+            "location_slug": "ca-oakland",
+            "within_search_area": true,
+            "distance": 11.245006427577161,
+            "lat": 37.82312,
+            "lon": -122.25835,
+            "uid": "e5706cec1b5ed179f5964f09bd494160",
+            "name": "The Permanente Medical Group - Oakland Medical Center",
+            "website": "https://mydoctor.kaiserpermanente.org/ncal/provider/davidlaw#tab%7C2%7C1%7CProfessional%7C/ncal/provider/davidlaw/about/professional?professional=aboutme.xml&ctab=About+Me&cstab=Professional&to=1&sto=0",
+            "accepts_new_patients": true,
+            "insurance_uids": [
+              "blueshieldofcalifornia-blueshieldcabasicppobronzelevelhix",
+              "healthnet-healthnetindividualfamilyppohix",
+              "anthem-blueviewvision",
+              "blueshieldofcalifornia-blueshieldcabasicepobronzelevelhix",
+              "cigna-vision",
+              "vsp-vsp",
+              "healthnet-healthnetcommunitycarenetworkhmohix",
+              "medicare-medicare",
+              "medicaid-medicaid",
+              "aetna-aetnamdbronzesilverandgoldhmo",
+              "healthnet-bluegoldhmo",
+              "healthnet-hmoexcelcaresilvernetwork",
+              "healthnet-hmoexcelcaresilvernetworkmedicarecob",
+              "anthembluecrossblueshield-golddirectaccesspluswhsa",
+              "anthembluecrossblueshield-bronzedirectaccessplusgjqa",
+              "healthnet-healthnetcabluegoldhmo",
+              "kaiserpermanente-kaiserpermanente"
+            ],
+            "visit_address": {
+              "city": "Oakland",
+              "lat": 37.82312,
+              "lon": -122.25835,
+              "state": "CA",
+              "state_long": "California",
+              "street": "3600 Broadway",
+              "zip": "94611"
+            },
+            "office_hours": [],
+            "phones": [
+              {
+                "number": "5107525438",
+                "type": "landline"
+              }
+            ],
+            "languages": [
+              {
+                "name": "English",
+                "code": "en"
+              }
+            ]
+          }
+        ],
+        "educations": [],
+        "profile": {
+          "first_name": "Martin",
+          "last_name": "Jimenez",
+          "slug": "martin-jimenez",
+          "title": "MD",
+          "image_url": "https://asset1.betterdoctor.com/assets/general_doctor_male.png",
+          "gender": "male",
+          "languages": [
+            {
+              "name": "English",
+              "code": "en"
+            }
+          ],
+          "bio": "Dr. Martin Jimenez, MD--specialist in hospitalist and internal medicine--currently treats patients in Oakland, California.\n\nDr. Jimenez is licensed to treat patients in California.\n\nDr. Jimenez has successfully passed a background check including a medical license verification (active) and screening for malpractice history (none found)."
+        },
+        "ratings": [],
+        "insurances": [
+          {
+            "insurance_plan": {
+              "uid": "blueshieldofcalifornia-blueshieldcabasicppobronzelevelhix",
+              "name": "Basic PPO - Bronze level HIX",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "blueshieldofcalifornia",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-healthnetindividualfamilyppohix",
+              "name": "Health Net Individual  Family - PPO  HIX",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "anthem-blueviewvision",
+              "name": "Blue View Vision",
+              "category": [
+                "vision"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "anthembluecross",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "blueshieldofcalifornia-blueshieldcabasicepobronzelevelhix",
+              "name": "Basic EPO - Bronze level HIX",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "blueshieldofcalifornia",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "cigna-vision",
+              "name": "Vision",
+              "category": [
+                "vision"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "cigna",
+              "name": "Cigna"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "vsp-vsp",
+              "name": "VSP",
+              "category": [
+                "vision"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "vsp",
+              "name": "VSP"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-healthnetcommunitycarenetworkhmohix",
+              "name": "Health Net CommunityCare Network - HMO  HIX",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "medicare-medicare",
+              "name": "Medicare",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "medicare",
+              "name": "Medicare"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "medicaid-medicaid",
+              "name": "Medicaid",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "medicaid",
+              "name": "Medicaid"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "aetna-aetnamdbronzesilverandgoldhmo",
+              "name": "MD Bronze Silver  Gold - HMO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "aetna",
+              "name": "Aetna"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-bluegoldhmo",
+              "name": "Blue  Gold - HMO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-hmoexcelcaresilvernetwork",
+              "name": "HMO - ExcelCare  Silver Network",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-hmoexcelcaresilvernetworkmedicarecob",
+              "name": "HMO - ExcelCare  Silver Network Medicare COB",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "HealthNet"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "anthembluecrossblueshield-golddirectaccesspluswhsa",
+              "name": "Gold DirectAccess Plus with HSA",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "anthembluecrossblueshield",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "anthembluecrossblueshield-bronzedirectaccessplusgjqa",
+              "name": "Bronze DirectAccess Plus - gjqa",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "anthembluecrossblueshield",
+              "name": "BCBS"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "healthnet-healthnetcabluegoldhmo",
+              "name": "Health Net CA Blue  Gold HMO",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "healthnet",
+              "name": "Health Net"
+            }
+          },
+          {
+            "insurance_plan": {
+              "uid": "kaiserpermanente-kaiserpermanente",
+              "name": "Kaiser Permanente",
+              "category": [
+                "medical"
+              ]
+            },
+            "insurance_provider": {
+              "uid": "kaiserpermanente",
+              "name": "Kaiser Permanente"
+            }
+          }
+        ],
+        "specialties": [
+          {
+            "uid": "internist",
+            "name": "Internal Medicine",
+            "description": "Specializes in common illnesses and complex medical problems.",
+            "category": "medical",
+            "actor": "Internist",
+            "actors": "Internists"
+          },
+          {
+            "uid": "hospitalist",
+            "name": "Hospitalist",
+            "description": "Specializes in general medical care of hospitalized patients.",
+            "category": "medical",
+            "actor": "Hospitalist",
+            "actors": "Hospitalists"
+          }
+        ],
+        "licenses": [
+          {
+            "state": "CA"
+          },
+          {
+            "number": "A78823",
+            "state": "CA"
+          }
+        ],
+        "uid": "0935b391e6759516a4ab6a8816f7cb65",
+        "npi": "1821162132"
+      }
+    ]
+  }
+                    """.trimIndent()
+
+            val responseJson = JSONObject(response)
+
+            val dataArr = responseJson.getJSONArray("data")
+            val firstData = dataArr.getJSONObject(0)
+
+            val practiceArr = firstData.getJSONArray("practices")
+            val firstPractice = practiceArr.getJSONObject(0)
+
+            val phones = firstPractice.getJSONArray("phones")
+            val firstPhone = phones.getJSONObject(0)
+
+            val number = firstPhone.getString("number")
+
+            Log.d("MainActivity", "Number: $number")
+
             val inputtedUsername: String = username.text.toString().trim()
             val inputtedPassword: String = password.text.toString().trim()
 

@@ -136,24 +136,25 @@ class TwitterManager {
                 val responseString = response.body()?.string()
 
                 if (response.isSuccessful && responseString != null) {
-                    val statuses = JSONObject(responseString).getJSONArray("statuses")
-                    for (i in 0 until statuses.length()) {
-                        val curr = statuses.getJSONObject(i)
-                        val text = curr.getString("text")
-                        val user = curr.getJSONObject("user")
-                        val name = user.getString("name")
-                        val handle = user.getString("screen_name")
-                        val profilePictureUrl = user.getString("profile_image_url")
-                        tweets.add(
-                            Tweet(
-                                iconUrl = profilePictureUrl,
-                                username = name,
-                                handle = handle,
-                                content = text
-                            )
-                        )
-                    }
-                    successCallback(tweets)
+
+//                    val statuses = JSONObject(responseString).getJSONArray("statuses")
+//                    for (i in 0 until statuses.length()) {
+//                        val curr = statuses.getJSONObject(i)
+//                        val text = curr.getString("text")
+//                        val user = curr.getJSONObject("user")
+//                        val name = user.getString("name")
+//                        val handle = user.getString("screen_name")
+//                        val profilePictureUrl = user.getString("profile_image_url")
+//                        tweets.add(
+//                            Tweet(
+//                                iconUrl = profilePictureUrl,
+//                                username = name,
+//                                handle = handle,
+//                                content = text
+//                            )
+//                        )
+//                    }
+                    successCallback(listOf())
                 //...
                 } else {
                     // Invoke the callback passed to our [retrieveTweets] function.
